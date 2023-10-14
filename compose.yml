@@ -1,0 +1,27 @@
+networks:
+  server:
+    external: true
+services:
+  nginx:
+    container_name: nginx
+    image: nginx
+    restart: always
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./nginx:/etc/nginx:ro
+      - ./letsencrypt:/etc/letsencrypt:ro
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - server
+  certbot:
+    container_name: certbot
+    image: certbot/dns-cloudflare
+    command: sh -c "certbot renew"
+    entrypoint: ""
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./letsencrypt:/etc/letsencrypt
