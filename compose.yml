@@ -23,5 +23,7 @@ services:
     entrypoint: ""
     environment:
       - TZ=${TZ}
+    env_file:
+      - .secrets.env
     volumes:
       - ./letsencrypt:/etc/letsencrypt
