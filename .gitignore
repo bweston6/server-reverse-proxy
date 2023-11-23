@@ -1,2 +1,3 @@
 .secrets.env
+cloudflare-ddns/*
 letsencrypt/*
