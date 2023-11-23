@@ -5,3 +5,4 @@ Documentation=https://eff-certbot.readthedocs.io/en/stable/
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/docker start certbot
+ExecStartPost=/usr/bin/docker restart nginx
