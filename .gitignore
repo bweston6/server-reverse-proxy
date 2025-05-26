@@ -1,3 +1,6 @@
+*.db
+**/.cache/*
+.php-cs-fixer.cache
 .secrets.env
 cloudflare-ddns/*
 letsencrypt/*

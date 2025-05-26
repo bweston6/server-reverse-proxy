@@ -4,16 +4,19 @@ networks:
 services:
   nginx:
     container_name: nginx
-    image: nginx
+    build: ./nginx
     restart: always
     environment:
       - TZ=${TZ}
     volumes:
-      - ./nginx:/etc/nginx:ro
+      - ./nginx:/etc/nginx
       - ./letsencrypt:/etc/letsencrypt:ro
+      - ./website/src:/etc/nginx/html/website:ro
+      - phpsocket:/var/run
     ports:
       - 80:80
       - 443:443
+      - 443:443/udp
     networks:
       - server
   certbot:
@@ -39,3 +42,15 @@ services:
     volumes:
       - ./cloudflare-ddns/config.json:/config.json
     restart: always
+  php:
+    container_name: php
+    build: ./website
+    volumes:
+      - ./website/src:/var/www/html
+      - ./website/db:/var/data/
+      - phpsocket:/var/run
+    networks:
+      - server
+    restart: always
+volumes:
+    phpsocket:
