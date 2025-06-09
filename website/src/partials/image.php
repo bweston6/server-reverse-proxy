@@ -1,25 +1,30 @@
 <?php
-function image(string $src, string $alt): string {
+function image(string $src, string $alt, string $class=""): string {
     $imageCacheUrl = "/assets/.cache/";
-    $imageCachePath = dirname(__DIR__) . $imageCacheUrl;
+    $imageCachePath = ROOT_DIR . $imageCacheUrl;
 
     $url = pathinfo($src);
 
-    $path = dirname(__DIR__) . $src;
+    $path = ROOT_DIR . $src;
     [$width, $height] = getimagesize($path);
+    $max_width = min($width, 2400);
 
     $images = [
         "quarter" => [
-            "width" => floor($width / 4),
-            "url" => $imageCacheUrl . $url['filename'] . "-" . floor($width / 4) . "." . $url['extension'],
+            "width" => floor($max_width / 4),
+            "url" => $imageCacheUrl . $url['filename'] . "-" . floor($max_width / 4) . "." . $url['extension'],
         ],
         "third" => [
-            "width" => floor($width / 3),
-            "url" => $imageCacheUrl . $url['filename'] . "-" . floor($width / 3) . "." . $url['extension'],
+            "width" => floor($max_width / 3),
+            "url" => $imageCacheUrl . $url['filename'] . "-" . floor($max_width / 3) . "." . $url['extension'],
         ],
         "half" => [
-            "width" => floor($width / 2),
-            "url" => $imageCacheUrl . $url['filename'] . "-" . floor($width / 2) . "." . $url['extension'],
+            "width" => floor($max_width / 2),
+            "url" => $imageCacheUrl . $url['filename'] . "-" . floor($max_width / 2) . "." . $url['extension'],
+        ],
+        "full" => [
+            "width" => $max_width,
+            "url" => $imageCacheUrl . $url['filename'] . "-" . $max_width . "." . $url['extension'],
         ],
         "original" => [
             "width" => $width,
@@ -31,7 +36,7 @@ function image(string $src, string $alt): string {
     foreach($images as $image) {
         if (
             array_key_exists('noresize', $image) && $image['noresize'] ||
-                apcu_entry(dirname(__DIR__) . $image['url'], function($file) {
+                apcu_entry(ROOT_DIR . $image['url'], function($file) {
                     return file_exists($file);
                 })
         ) {
@@ -39,25 +44,27 @@ function image(string $src, string $alt): string {
         }
         imageavif(
             imagescale(imagecreatefromavif($path), $image['width']),
-            dirname(__DIR__) . $image['url'],
+            ROOT_DIR . $image['url'],
         );
-        apcu_delete(dirname(__DIR__) . $image['url']);
+        apcu_delete(ROOT_DIR . $image['url']);
     }
 
     $lqipUrl = $imageCacheUrl . $url['filename'] . "-lqip." . $url['extension'];
-    if (!apcu_entry(dirname(__DIR__) . $lqipUrl, function($file) {
+    if (!apcu_entry(ROOT_DIR . $lqipUrl, function($file) {
         return file_exists($file);
     })
 
     ) {
-        $lqipPath = dirname(__DIR__) . $lqipUrl;
+        $lqipPath = ROOT_DIR . $lqipUrl;
         imageavif(
-            imagecreatefromavif($path),
+            imagescale(
+                imagecreatefromavif($path),
+                $max_width
+            ),
             $lqipPath,
             0,
-            10
         );
-        apcu_delete(dirname(__DIR__) . $lqipUrl);
+        apcu_delete(ROOT_DIR . $lqipUrl);
         apcu_delete("lqips");
     }
 
@@ -66,7 +73,8 @@ function image(string $src, string $alt): string {
 
     <img
 	    style="aspect-ratio: <?= $width ?> / <?= $height ?>; background-image: url(<?= $lqipUrl ?>)"
-        src="<?= $images[array_key_first($images)]['url'] ?>" alt="<?= $alt ?>" 
+        <?= $class ? "class='$class'" : "" ?>
+        src="<?= $images[array_key_last($images)]['url'] ?>" alt="<?= $alt ?>" 
 	    srcset="
         <?php foreach($images as $image) {
         echo "{$image['url']} {$image['width']}w,";

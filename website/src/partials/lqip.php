@@ -1,7 +1,7 @@
 <?php
 function getLqipLinkTags(): string {
     $lqips = apcu_entry("lqips", function() {
-        $files = scandir(dirname(__DIR__) . "/assets/.cache/");
+        $files = scandir(ROOT_DIR . "/assets/.cache/");
         return array_filter($files, function ($file) {
             return str_ends_with($file, "lqip.avif");
         });

@@ -10,6 +10,9 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 # Up the php-fpm children limit
 RUN sed -i 's/\(pm\.max_children = \).*/\148/' /usr/local/etc/php-fpm.d/www.conf
 RUN sed -i 's/\(pm = \).*/\1ondemand/' /usr/local/etc/php-fpm.d/www.conf
+# Increase memory limit for image processing
+RUN sed -i 's/\(memory_limit = \).*/\1512M/' /usr/local/etc/php/php.ini
+# Enable opcache
 COPY opcache.ini /usr/local/etc/php/conf.d/
 # Enable xdebug
 #COPY xdebug.ini /usr/local/etc/php/conf.d/
